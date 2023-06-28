@@ -6,24 +6,30 @@ de hundir los barcos enemigos. Deberás crear un programa que
 simule el emocionante juego de la Batalla Naval contra la computadora.
  */
 
+import java.security.DrbgParameters.Reseed;
 import java.util.Arrays;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class BatallaDeNavios {
         
     public static char[][] matrizComputadora = new char[4][4];
     public static char[][] matrizJugador = new char[4][4]; 
     public static char[][] matrizQueVeElJugador = new char[4][4]; 
+    public static char[][] matrizAprendizaje = new char[4][4]; 
 
     public static boolean enJuego = true;
     public static boolean ganoLaIA = false;
+
+    public static int cantidadDeTurnos = 0;
 
     Scanner myScanner = new Scanner(System.in);
 
     public void inicializacionDeMatrices() {
         char vacio = '~';
         
-        for (int index = 0; index < 3; index++) {            
+        for (int index = 0; index < 4; index++) {            
             char[][] matrizParaLlenar = new char[4][4];
             if (index == 0){
                 matrizParaLlenar = matrizComputadora;
@@ -31,6 +37,8 @@ public class BatallaDeNavios {
                 matrizParaLlenar = matrizJugador;
             } else if (index == 2){
                 matrizParaLlenar = matrizQueVeElJugador;                
+            } else if (index == 3){
+                matrizParaLlenar = matrizAprendizaje;                
             }
             for (int i = 0; i < matrizParaLlenar.length; i++) {
                 for (int j = 0; j < matrizParaLlenar[i].length; j++) {
@@ -82,6 +90,18 @@ public class BatallaDeNavios {
         for (int i = 0; i < imrpimirEstaMatriz.length; i++) {
             System.out.println(Arrays.toString(imrpimirEstaMatriz[i]));
         }
+    }
+
+    public void mostrarMatrizJugador() {
+        System.out.print("\nMatriz del JUGADOR \tMatriz de la COMPUTADORA\n");
+        for (int i = 0; i < matrizJugador.length; i++) {
+            System.out.println(
+                Arrays.toString(matrizJugador[i]) +
+                "\t\t" +
+                Arrays.toString(matrizQueVeElJugador[i]) 
+            );
+        }
+        System.out.println("******  FIN DEL TURNO DEL JUGADOR ******\n");
     }
 
     public void verificar(String coordenadaString, char[][] matrizSeleccionada, String turno) {
@@ -138,8 +158,7 @@ public class BatallaDeNavios {
         }
 
         if (turno.equals("jugador")){
-            mostrarMatriz(matrizJugador);
-
+            // mostrarMatriz(matrizJugador);
             for (int i = 0; i < matrizQueVeElJugador.length; i++) {
                 for (int j = 0; j < matrizQueVeElJugador[i].length; j++) {
                     char celda = matrizComputadora[i][j];
@@ -162,11 +181,35 @@ public class BatallaDeNavios {
                     }
                 }
             }
-            mostrarMatriz(matrizQueVeElJugador);
-            System.out.println("Fue el turno de: " + turno);
+            // mostrarMatriz(matrizQueVeElJugador);
+            // System.out.println("Fue el turno de: " + turno);
+            mostrarMatrizJugador();
         } else if (turno.equals("computadora")){
+            for (int i = 0; i < matrizAprendizaje.length; i++) {
+                for (int j = 0; j < matrizAprendizaje[i].length; j++) {
+                    char celda = matrizJugador[i][j];
+                    switch (celda) {
+                        case '~':
+                            // Nada
+                            break;
+                        case '=':
+                            // Nada
+                            break;
+                        case 'A':
+                            matrizAprendizaje[i][j] = matrizJugador[i][j];
+                            break;  
+                        case 'X':
+                            matrizAprendizaje[i][j] = matrizJugador[i][j];
+                            break;                  
+                        default:
+                            // se feliz kpo
+                            break;
+                    }
+                }
+            }
             mostrarMatriz(matrizJugador);
-            System.out.println("Fue el turno de: " + turno);
+            // System.out.println("Fue el turno de: " + turno);
+        System.out.println("******  FIN DEL TURNO 0011 0100 1011 ******\n");
         }
     } 
 
@@ -180,6 +223,62 @@ public class BatallaDeNavios {
         return false;
     }
 
+    public void jugadaDeLaComputadora() {  
+        boolean noSeJugoLaCelda = true; 
+        Integer filaRandom, columnaRandom = 0;
+        String coordenadas = "";
+        do {
+            columnaRandom = (int) (Math.random()*(3-0+1)+0);
+            filaRandom = (int) (Math.random()*(3-0+1)+0); 
+            // System.out.println(filaRandom + ";" + columnaRandom);
+            if (matrizAprendizaje[filaRandom][columnaRandom] == '~') {
+                noSeJugoLaCelda = true;
+                // System.out.println(matrizAprendizaje[filaRandom][columnaRandom]);
+            } else {
+                noSeJugoLaCelda = false;
+            } 
+        } while (!noSeJugoLaCelda);
+        columnaRandom++;
+        // System.out.println(columnaRandom);
+        String filaString = "";           
+        switch (filaRandom) {
+            case 0:
+                filaString = "a";
+                break;
+            case 1:
+                filaString = "b";
+                break;
+            case 2:
+                filaString = "c";
+                break;
+            case 3:
+                filaString = "d";
+                break;        
+            default:
+                break;
+        }
+        coordenadas = filaString + "-" + columnaRandom.toString();
+        System.out.println("Las coordenadas de Skynet: " + coordenadas);
+        verificar(coordenadas, matrizJugador, "computadora");
+    }
+
+    public static void clearTerminal() {
+        String os = System.getProperty("os.name").toLowerCase();
+
+        try {
+            if (os.contains("win")) {
+                // Limpiar la terminal en Windows
+                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+            } else if (os.contains("mac") || os.contains("nix") || os.contains("nux") || os.contains("bsd")) {
+                // Limpiar la terminal en macOS, Linux y otros sistemas basados en Unix
+                new ProcessBuilder("clear").inheritIO().start().waitFor();
+            }
+        } catch (Exception e) {
+            // Manejar cualquier excepción
+            e.printStackTrace();
+        }
+    }
+    
     public void jugar() {    
         // Formato letras -> fila y columnas -> números
         // Ejemplo a-4
@@ -188,40 +287,62 @@ public class BatallaDeNavios {
         System.out.println("Formato letras -> fila y columnas -> números\n\tDel tipo a-3 cómo ejemplo.");
         do {
             // Realizar la jugada el jugador
-            System.out.println("Ingrese coordenadas para el ataque:");
-            coordenadas = myScanner.nextLine();
-            verificar(coordenadas, matrizComputadora, "jugador");
+            // System.out.println("Ingrese coordenadas para el ataque:");
+            // coordenadas = myScanner.nextLine();
+            // clearTerminal();
+            boolean coordenadasIncorrectas = true;
+            do {
+                System.out.println("Ingrese coordenadas para el ataque:");
+                coordenadas = myScanner.nextLine();
+                clearTerminal();
+                try {
+                    // Eliminar caracteres no deseados y ajustar separadores
+                    String cleanedInput = coordenadas.replaceAll("[^a-zA-Z0-9.]", "").replace('.', '-');
+
+                    // Obtener la letra y el número utilizando expresiones regulares
+                    Pattern pattern = Pattern.compile("([a-zA-Z])([0-9])");
+                    Matcher matcher = pattern.matcher(cleanedInput);
+                    
+                    if (matcher.find()) {
+                        String letter = matcher.group(1).toUpperCase();
+                        int number = Integer.parseInt(matcher.group(2));
+
+                        // Verificar y ajustar la letra si es mayor a 'D'
+                        if (letter.charAt(0) > 'D') {
+                            letter = "D";
+                        }
+
+                        // Verificar y ajustar el número si es mayor a 4
+                        if (number > 4) {
+                            number = 4;
+                        }
+                        coordenadas = letter + "-" + number;
+                    }
+                    verificar(coordenadas, matrizComputadora, "jugador");  
+                    coordenadasIncorrectas = false;
+                } catch (ArrayIndexOutOfBoundsException ArrayException){
+                    System.out.println("Se lanzó la excepción: " + ArrayException);
+                    System.out.println("El valor de coordenadas ingresada no es valido, para el Array coordenadas");
+                    break;
+                } catch (Exception e) {
+                    // TODO: handle exception
+                    System.out.println("Se lanzó la excepción: " + e);
+                    System.out.println("El valor de coordenadas ingresada no es valido.");
+                    break;
+                }
+            } while (coordenadasIncorrectas); 
+
             if (!hayBarcosEnJuego(matrizComputadora)) {
                 ganoLaIA = false;
                 enJuego = false;
             }
             // Realizar la jugada la computadora
-            Integer columnaRandom = (int) (Math.random()*100/30);
-            Integer filaRandom = (int) (Math.random()*100/30); 
-            String filaString = "";           
-            switch (filaRandom) {
-                case 0:
-                    filaString = "a";
-                    break;
-                case 1:
-                    filaString = "b";
-                    break;
-                case 2:
-                    filaString = "c";
-                    break;
-                case 3:
-                    filaString = "d";
-                    break;        
-                default:
-                    break;
-            }
-            coordenadas = filaString + "-" + columnaRandom.toString();
-            System.out.println("Las coordenadas de pc: " + coordenadas);
-            verificar(coordenadas, matrizJugador, "computadora");
+            jugadaDeLaComputadora();
             if (!hayBarcosEnJuego(matrizJugador)){
                 ganoLaIA = true;
                 enJuego = false;
             }
+            cantidadDeTurnos++;
         } while (enJuego);
         String ganador;
         if (ganoLaIA){
@@ -229,7 +350,7 @@ public class BatallaDeNavios {
         } else {
             ganador = "vos kpo";
         }
-        System.out.println("El ganador es: " + ganador);
+        System.out.println("El ganador es: " + ganador + "\n\tEn " + cantidadDeTurnos + " cantidad de turnos.");
         System.out.println("GAME OVER!");
     }
 
@@ -238,9 +359,9 @@ public class BatallaDeNavios {
         BatallaDeNavios batalla = new BatallaDeNavios();
         batalla.inicializacionDeMatrices();
 
-        batalla.mostrarMatriz(matrizComputadora);
+        // batalla.mostrarMatriz(matrizComputadora);
         batalla.mostrarMatriz(matrizJugador);        
-        // batalla.mostrarMatriz(matrizQueVeElJugador);
+        // batalla.mostrarMatriz(matrizAprendizaje);
 
         batalla.jugar();
     }
