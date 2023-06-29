@@ -1,12 +1,15 @@
 /*
- * Batalla Naval
-El objetivo del siguiente ejercicio es poner en práctica tus 
-habilidades de programación mientras te enfrentas a la tarea 
-de hundir los barcos enemigos. Deberás crear un programa que 
-simule el emocionante juego de la Batalla Naval contra la computadora.
+ * Batalla Naval:
+ * El objetivo del siguiente ejercicio es poner en práctica tus 
+ * habilidades de programación mientras te enfrentas a la tarea 
+ * de hundir los barcos enemigos. Deberás crear un programa que 
+ * simule el emocionante juego de la Batalla Naval contra la computadora.
+ * 
+ * 
+ * Autor: Mario Stefano Papetti Funes
+ * F: 28/06/2023
  */
 
-import java.security.DrbgParameters.Reseed;
 import java.util.Arrays;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -14,21 +17,44 @@ import java.util.regex.Pattern;
 
 public class BatallaDeNavios {
         
-    public static char[][] matrizComputadora = new char[4][4];
-    public static char[][] matrizJugador = new char[4][4]; 
-    public static char[][] matrizQueVeElJugador = new char[4][4]; 
-    public static char[][] matrizAprendizaje = new char[4][4]; 
+    //      Matrices para el desarrillo del juego
+    public static char[][] matrizComputadora;
+    public static char[][] matrizJugador; 
+    public static char[][] matrizQueVeElJugador; 
+    public static char[][] matrizAprendizaje; 
 
+    //      Banderas para determinar continuidad y finalización del jeugo y quien ganó
     public static boolean enJuego = true;
     public static boolean ganoLaIA = false;
 
+    //     Constantes para el uso meramente grafico
+    public static final char CELDA_VACIA = '~';
+    public static final char CELDA_BARCO = '=';
+    public static final char CELDA_ATACADA = 'A';
+    public static final char CELDA_FALLADA = 'X';
+    
+    //      Atributos para poder definir luego las dimensiones de las matrices
+    public static int cantidadDeFilas = 0;
+    public static int cantidadDeColumnas = 0;
+
+    //      Cantidad de turnos transcurridos
     public static int cantidadDeTurnos = 0;
 
+    //      Instanciación del objeto myScanner para la toma de datos por consola
     Scanner myScanner = new Scanner(System.in);
 
     public void inicializacionDeMatrices() {
-        char vacio = '~';
-        
+
+        System.out.println("Ingrese el número de FILAS de los tableros:");
+        cantidadDeFilas = myScanner.nextInt();
+        System.out.println("Ingrese el número de COLUMNAS de los tableros:");
+        cantidadDeColumnas = myScanner.nextInt();
+
+        matrizJugador = new char[cantidadDeFilas][cantidadDeColumnas];
+        matrizQueVeElJugador = new char[cantidadDeFilas][cantidadDeColumnas];
+        matrizComputadora = new char[cantidadDeFilas][cantidadDeColumnas];
+        matrizAprendizaje = new char[cantidadDeFilas][cantidadDeColumnas];
+
         for (int index = 0; index < 4; index++) {            
             char[][] matrizParaLlenar = new char[4][4];
             if (index == 0){
@@ -42,14 +68,17 @@ public class BatallaDeNavios {
             }
             for (int i = 0; i < matrizParaLlenar.length; i++) {
                 for (int j = 0; j < matrizParaLlenar[i].length; j++) {
-                    matrizParaLlenar[i][j] = vacio;
+                    matrizParaLlenar[i][j] = CELDA_VACIA;
                 }
             }
         }
-        char barco = '=';
-        int contadorDeBarcos = 4;
+        
+        int contadorDeBarcos, barcosTotales;
+        System.out.print("Ingrese la cantidad de Barcos con la que desea jugar: ");
+        barcosTotales = myScanner.nextInt();
+        contadorDeBarcos = barcosTotales;
         for (int k = 0; k < 2; k++) {
-            char[][] matrizParaLlenar = new char[4][4];
+            char[][] matrizParaLlenar = new char[cantidadDeFilas][cantidadDeColumnas];
             if (k == 0){
                 matrizParaLlenar = matrizComputadora;
             } else {
@@ -63,8 +92,8 @@ public class BatallaDeNavios {
                         char celda = matrizParaLlenar[filasRandom][ColumnasRandom];
                         if (contadorDeBarcos == 0){
                             break;
-                        } else if ((celda != barco ) && (((int) (Math.random()*(10)+1)) < 5)){
-                            matrizParaLlenar[i][j] = barco; 
+                        } else if ((celda != CELDA_BARCO ) && (((int) (Math.random()*(10)+1)) < 5)){
+                            matrizParaLlenar[i][j] = CELDA_BARCO; 
                             contadorDeBarcos--;
                         }                
                     }
@@ -73,7 +102,7 @@ public class BatallaDeNavios {
                     }
                 }
             }
-            contadorDeBarcos = 4;
+            contadorDeBarcos = barcosTotales;
         }
     }
 
@@ -150,11 +179,11 @@ public class BatallaDeNavios {
 
         //el jugador juega -> actualiza matrizquelejugadorve
         // para ello esa matriz compararse con matriz de computadora
-        if (matrizSeleccionada[fila][columna] == '='){
+        if (matrizSeleccionada[fila][columna] == CELDA_BARCO){
             // marcar barco undido.
-            matrizSeleccionada[fila][columna] = 'A';
-        } else if (matrizSeleccionada[fila][columna] == '~'){
-            matrizSeleccionada[fila][columna] = 'X';
+            matrizSeleccionada[fila][columna] = CELDA_ATACADA;
+        } else if (matrizSeleccionada[fila][columna] == CELDA_VACIA){
+            matrizSeleccionada[fila][columna] = CELDA_FALLADA;
         }
 
         if (turno.equals("jugador")){
@@ -163,16 +192,16 @@ public class BatallaDeNavios {
                 for (int j = 0; j < matrizQueVeElJugador[i].length; j++) {
                     char celda = matrizComputadora[i][j];
                     switch (celda) {
-                        case '~':
+                        case CELDA_VACIA:
                             // Nada
                             break;
-                        case '=':
+                        case CELDA_BARCO:
                             // Nada
                             break;
-                        case 'A':
+                        case CELDA_ATACADA:
                             matrizQueVeElJugador[i][j] = matrizComputadora[i][j];
                             break;  
-                        case 'X':
+                        case CELDA_FALLADA:
                             matrizQueVeElJugador[i][j] = matrizComputadora[i][j];
                             break;                  
                         default:
@@ -189,16 +218,16 @@ public class BatallaDeNavios {
                 for (int j = 0; j < matrizAprendizaje[i].length; j++) {
                     char celda = matrizJugador[i][j];
                     switch (celda) {
-                        case '~':
+                        case CELDA_VACIA:
                             // Nada
                             break;
-                        case '=':
+                        case CELDA_BARCO:
                             // Nada
                             break;
-                        case 'A':
+                        case CELDA_ATACADA:
                             matrizAprendizaje[i][j] = matrizJugador[i][j];
                             break;  
-                        case 'X':
+                        case CELDA_FALLADA:
                             matrizAprendizaje[i][j] = matrizJugador[i][j];
                             break;                  
                         default:
@@ -214,10 +243,9 @@ public class BatallaDeNavios {
     } 
 
     public boolean hayBarcosEnJuego(char[][] matrizQueQuieroEvaluar) {
-        
         for (int i = 0; i < matrizQueQuieroEvaluar.length; i++) {
             for (int j = 0; j < matrizQueQuieroEvaluar[i].length; j++) {
-                if (matrizQueQuieroEvaluar[i][j] == '=') return true;
+                if (matrizQueQuieroEvaluar[i][j] == CELDA_BARCO) return true;
             }
         }
         return false;
@@ -231,7 +259,7 @@ public class BatallaDeNavios {
             columnaRandom = (int) (Math.random()*(3-0+1)+0);
             filaRandom = (int) (Math.random()*(3-0+1)+0); 
             // System.out.println(filaRandom + ";" + columnaRandom);
-            if (matrizAprendizaje[filaRandom][columnaRandom] == '~') {
+            if (matrizAprendizaje[filaRandom][columnaRandom] == CELDA_VACIA) {
                 noSeJugoLaCelda = true;
                 // System.out.println(matrizAprendizaje[filaRandom][columnaRandom]);
             } else {
@@ -285,6 +313,7 @@ public class BatallaDeNavios {
         String coordenadas;
         System.out.println("Bienvenidos a la batalla Naval ndeeeahh..");
         System.out.println("Formato letras -> fila y columnas -> números\n\tDel tipo a-3 cómo ejemplo.");
+        myScanner = new Scanner(System.in);
         do {
             // Realizar la jugada el jugador
             // System.out.println("Ingrese coordenadas para el ataque:");
@@ -313,8 +342,8 @@ public class BatallaDeNavios {
                         }
 
                         // Verificar y ajustar el número si es mayor a 4
-                        if (number > 4) {
-                            number = 4;
+                        if (number > cantidadDeColumnas) {
+                            number = cantidadDeColumnas;
                         }
                         coordenadas = letter + "-" + number;
                     }
@@ -357,6 +386,7 @@ public class BatallaDeNavios {
     public static void main(String[] args) {
 
         BatallaDeNavios batalla = new BatallaDeNavios();
+
         batalla.inicializacionDeMatrices();
 
         // batalla.mostrarMatriz(matrizComputadora);
