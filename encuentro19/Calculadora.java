@@ -72,6 +72,7 @@ public class Calculadora {
       }
   }
   public static void main(String[] args) {
+    System.out.println("Bienvenidos a la calculadora de ctistian");
     boolean calculando;
     do {
       calculando = menu();
